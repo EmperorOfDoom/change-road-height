@@ -5,7 +5,7 @@ using ColossalFramework;
 using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
-using ChangeRoadHeight.enumarations;
+using ChangeRoadHeight.Enums;
 
 namespace ChangeRoadHeight
 {
@@ -122,23 +122,23 @@ namespace ChangeRoadHeight
                 tab.name = "ChangeRoadHeightButton";
                 tab.atlas = atlas;
                 tab.size = new Vector2(spriteWidth, spriteHeight);
-                tab.normalBgSprite = SpriteNames.ButtonBackground.ToString();
-                tab.disabledBgSprite = SpriteNames.ButtonBackground.ToString();
-                tab.hoveredBgSprite = SpriteNames.ButtonBackgroundHovered.ToString();
-                tab.pressedBgSprite = SpriteNames.ButtonBackgroundPressed.ToString();
-                tab.focusedBgSprite = SpriteNames.ButtonBackgroundPressed.ToString();
+                tab.normalBgSprite = SpriteName.ButtonBackground.ToString();
+                tab.disabledBgSprite = SpriteName.ButtonBackground.ToString();
+                tab.hoveredBgSprite = SpriteName.ButtonBackgroundHovered.ToString();
+                tab.pressedBgSprite = SpriteName.ButtonBackgroundPressed.ToString();
+                tab.focusedBgSprite = SpriteName.ButtonBackgroundPressed.ToString();
                 tab.playAudioEvents = true;
             }
 
             tabs[0].name = "ChangeRoadHeightButtonUp";
             tabs[0].tooltip = "Move road up";
-            tabs[0].normalFgSprite = tabs[0].disabledFgSprite = tabs[0].hoveredFgSprite = SpriteNames.IconRoadUp.ToString();
-            tabs[0].pressedFgSprite = tabs[0].focusedFgSprite = SpriteNames.IconRoadUpPressed.ToString();
+            tabs[0].normalFgSprite = tabs[0].disabledFgSprite = tabs[0].hoveredFgSprite = SpriteName.IconRoadUp.ToString();
+            tabs[0].pressedFgSprite = tabs[0].focusedFgSprite = SpriteName.IconRoadUpPressed.ToString();
 
             tabs[1].name = "ChangeRoadHeightButtonDown";
             tabs[1].tooltip = "Move road down";
-            tabs[1].normalFgSprite = tabs[1].disabledFgSprite = tabs[1].hoveredFgSprite = SpriteNames.IconRoadDown.ToString();
-            tabs[1].pressedFgSprite = tabs[1].focusedFgSprite = SpriteNames.IconRoadDownPressed.ToString();
+            tabs[1].normalFgSprite = tabs[1].disabledFgSprite = tabs[1].hoveredFgSprite = SpriteName.IconRoadDown.ToString();
+            tabs[1].pressedFgSprite = tabs[1].focusedFgSprite = SpriteName.IconRoadDownPressed.ToString();
 
 
             roadsOptionPanel.AttachUIComponent(tabstrip.gameObject);
@@ -172,7 +172,7 @@ namespace ChangeRoadHeight
         }
 
         UITextureAtlas CreateTextureAtlas(string textureFile, string atlasName, Material baseMaterial, int spriteWidth, int spriteHeight) {
-            string[] spriteNames = Enum.GetNames(typeof(SpriteNames));
+            string[] spriteNames = Enum.GetNames(typeof(SpriteName));
             Texture2D tex = new Texture2D(spriteWidth * spriteNames.Length, spriteHeight, TextureFormat.ARGB32, false);
             tex.filterMode = FilterMode.Bilinear;
 

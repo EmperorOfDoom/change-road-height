@@ -5,25 +5,10 @@ using ColossalFramework;
 using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
+using ChangeRoadHeight.Enums;
 
 namespace ChangeRoadHeight
 {
-    public enum ToolMode {
-        None = 0,
-        Twoway = 1,
-        Oneway = 2
-    }
-
-    public enum ToolError {
-        None, 
-        Unknown,
-        AlreadyBuilt,
-        AlreadyTwoway, 
-        SameDirection, 
-        CannotUpgradeThisType, 
-        OutOfArea
-    }
-
     public class Mod : IUserMod {
 
         public string Name
@@ -44,7 +29,7 @@ namespace ChangeRoadHeight
     }
 
     // Class name needs to be changed if the mod is reloaded while the game is running (or if you have another version of the mod installed)
-    class BuildTool3 : ToolBase {
+    class BuildTool : ToolBase {
 
         public ToolMode toolMode = ToolMode.None;
         public ToolError toolError = ToolError.None;
@@ -192,7 +177,7 @@ namespace ChangeRoadHeight
         ModUI ui = new ModUI();
         bool loadingLevel = false;
 
-        BuildTool3 buildTool = null;
+        BuildTool buildTool = null;
 
         public void OnLevelUnloading() {
             ui.DestroyView();
@@ -219,9 +204,9 @@ namespace ChangeRoadHeight
 
         void CreateBuildTool() {
             if (buildTool == null) {
-                buildTool = ToolsModifierControl.toolController.gameObject.GetComponent<BuildTool3>();
+                buildTool = ToolsModifierControl.toolController.gameObject.GetComponent<BuildTool>();
                 if (buildTool == null) {  
-                    buildTool = ToolsModifierControl.toolController.gameObject.AddComponent<BuildTool3>();
+                    buildTool = ToolsModifierControl.toolController.gameObject.AddComponent<BuildTool>();
                     ModDebug.Log("Tool created: " + buildTool);
                 }
                 else {
@@ -233,7 +218,7 @@ namespace ChangeRoadHeight
         void DestroyBuildTool() {
             if (buildTool != null) {
                 ModDebug.Log("Tool destroyed");
-                BuildTool3.Destroy(buildTool);
+                BuildTool.Destroy(buildTool);
                 buildTool = null;
             }
         }
@@ -404,7 +389,7 @@ namespace ChangeRoadHeight
             raycastInput.m_ignoreSegmentFlags = NetSegment.Flags.Untouchable;
 
             ToolBase.RaycastOutput raycastOutput;
-            if (BuildTool3.RayCast(raycastInput, out raycastOutput)) {
+            if (BuildTool.RayCast(raycastInput, out raycastOutput)) {
 
                 int segmentIndex = raycastOutput.m_netSegment;
                 if (segmentIndex != 0) {
