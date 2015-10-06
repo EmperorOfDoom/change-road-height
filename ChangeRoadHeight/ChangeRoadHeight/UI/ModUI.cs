@@ -28,22 +28,25 @@ namespace ChangeRoadHeight
                         {
                             originalBuiltinTabsripSelectedIndex = builtinTabstrip.selectedIndex;
                         }
+                        IgnoreBuiltinTabstrip(-1);
 
-                        ignoreBuiltinTabstripEvents = true;
-                        ModDebug.Log("Setting builtin tabstrip mode: " + (-1));
-                        builtinTabstrip.selectedIndex = -1;
-                        ignoreBuiltinTabstripEvents = false;
                     }
                     else if (builtinTabstrip.selectedIndex < 0 && originalBuiltinTabsripSelectedIndex >= 0)
                     {
-                        ignoreBuiltinTabstripEvents = true;
-                        ModDebug.Log("Setting builtin tabstrip mode: " + originalBuiltinTabsripSelectedIndex);
-                        builtinTabstrip.selectedIndex = originalBuiltinTabsripSelectedIndex;
-                        ignoreBuiltinTabstripEvents = false;
+                        IgnoreBuiltinTabstrip(originalBuiltinTabsripSelectedIndex);
                     }
                 }
             }
         }
+
+        private void IgnoreBuiltinTabstrip (int selectedIndex)
+        {
+            ignoreBuiltinTabstripEvents = true;
+            ModDebug.Log("Setting builtin tabstrip mode: " + (selectedIndex));
+            builtinTabstrip.selectedIndex = selectedIndex;
+            ignoreBuiltinTabstripEvents = false;
+        }
+
 
         public event System.Action<ToolMode> selectedToolModeChanged;
 
