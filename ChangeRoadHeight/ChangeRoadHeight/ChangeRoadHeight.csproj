@@ -54,7 +54,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="enumerations\SpriteNames.cs" />
+    <Compile Include="BuildTool.cs" />
+    <Compile Include="Enums\SpriteName.cs" />
+    <Compile Include="Enums\ToolError.cs" />
+    <Compile Include="Enums\ToolMode.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="ModDebug.cs" />
     <Compile Include="ModUI.cs" />
