@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using ColossalFramework;
 using ColossalFramework.UI;
-using ICities;
 using UnityEngine;
 using ChangeRoadHeight.Enums;
 
@@ -28,17 +26,10 @@ namespace ChangeRoadHeight
                         if (builtinTabstrip.selectedIndex >= 0) {
                             originalBuiltinTabsripSelectedIndex = builtinTabstrip.selectedIndex;
                         }
-
-                        ignoreBuiltinTabstripEvents = true;
-                        ModDebug.Log("Setting builtin tabstrip mode: " + (-1));
-                        builtinTabstrip.selectedIndex = -1;
-                        ignoreBuiltinTabstripEvents = false;
+                        IgnoreBuiltinTabStripEvents(-1);
                     }
                     else if (builtinTabstrip.selectedIndex < 0 && originalBuiltinTabsripSelectedIndex >= 0) {
-                        ignoreBuiltinTabstripEvents = true;
-                        ModDebug.Log("Setting builtin tabstrip mode: " + originalBuiltinTabsripSelectedIndex);
-                        builtinTabstrip.selectedIndex = originalBuiltinTabsripSelectedIndex;
-                        ignoreBuiltinTabstripEvents = false;
+                        IgnoreBuiltinTabStripEvents(originalBuiltinTabsripSelectedIndex);
                     }
                 }
             }
@@ -212,6 +203,14 @@ namespace ChangeRoadHeight
             }
 
             return atlas;
+        }
+
+        private void IgnoreBuiltinTabStripEvents(int selectedIndex)
+        {
+            ignoreBuiltinTabstripEvents = true;
+            ModDebug.Log("Setting builtin tabstrip mode: " + (selectedIndex));
+            builtinTabstrip.selectedIndex = selectedIndex;
+            ignoreBuiltinTabstripEvents = false;
         }
     }
 }

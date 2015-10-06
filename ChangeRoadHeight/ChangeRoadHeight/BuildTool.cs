@@ -4,7 +4,6 @@ using ChangeRoadHeight.Enums;
 
 namespace ChangeRoadHeight
 {
-    // Class name needs to be changed if the mod is reloaded while the game is running (or if you have another version of the mod installed)
     class BuildTool : ToolBase
     {
 
