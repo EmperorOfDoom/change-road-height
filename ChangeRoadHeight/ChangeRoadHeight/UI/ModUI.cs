@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
+
 
 using ColossalFramework.UI;
 using UnityEngine;
@@ -52,6 +54,7 @@ namespace ChangeRoadHeight.UI
         UITabstrip tabstrip = null;
         private static readonly int spriteWidth = 31;
         private static readonly int spriteHeight = 31;
+        private static readonly string panelName = "ChangeRoadHeightPanel";
 
         public void Show() {
             if (!initialized) {
@@ -87,7 +90,7 @@ namespace ChangeRoadHeight.UI
             builtinTabstrip = UIUtils.Instance.FindComponent<UITabstrip>("ToolMode", roadsOptionPanel);
             if (builtinTabstrip == null || !builtinTabstrip.gameObject.activeInHierarchy) return false;
 
-            tabstrip = UIUtils.Instance.FindComponent<UITabstrip>("ExtendedRoadUpgradePanel");
+            tabstrip = UIUtils.Instance.FindComponent<UITabstrip>(panelName);
             if (tabstrip != null) {
                 DestroyView();
             }
@@ -101,7 +104,7 @@ namespace ChangeRoadHeight.UI
         void CreateView() {
             ModDebug.Log("Creating view");
 
-            GameObject rootObject = new GameObject("ExtendedRoadUpgradePanel");
+            GameObject rootObject = new GameObject(panelName);
             tabstrip = rootObject.AddComponent<UITabstrip>();
 
             CreateButtons();
@@ -163,7 +166,7 @@ namespace ChangeRoadHeight.UI
             button.pressedFgSprite = button.focusedFgSprite = hoveredSprite.ToString();
         }
 
-        System.Collections.IEnumerator FinishCreatingView() {
+        private IEnumerator FinishCreatingView() {
             yield return null;
             tabstrip.selectedIndex = -1;
             tabstrip.eventSelectedIndexChanged += (UIComponent component, int index) => {
