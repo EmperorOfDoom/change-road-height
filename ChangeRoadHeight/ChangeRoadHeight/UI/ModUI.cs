@@ -22,14 +22,24 @@ namespace ChangeRoadHeight
                 }
 
                 if (builtinTabstrip != null) {
-                    if (_toolMode != ToolMode.None) {
-                        if (builtinTabstrip.selectedIndex >= 0) {
+                    if (_toolMode != ToolMode.None)
+                    {
+                        if (builtinTabstrip.selectedIndex >= 0)
+                        {
                             originalBuiltinTabsripSelectedIndex = builtinTabstrip.selectedIndex;
                         }
-                        IgnoreBuiltinTabStripEvents(-1);
+
+                        ignoreBuiltinTabstripEvents = true;
+                        ModDebug.Log("Setting builtin tabstrip mode: " + (-1));
+                        builtinTabstrip.selectedIndex = -1;
+                        ignoreBuiltinTabstripEvents = false;
                     }
-                    else if (builtinTabstrip.selectedIndex < 0 && originalBuiltinTabsripSelectedIndex >= 0) {
-                        IgnoreBuiltinTabStripEvents(originalBuiltinTabsripSelectedIndex);
+                    else if (builtinTabstrip.selectedIndex < 0 && originalBuiltinTabsripSelectedIndex >= 0)
+                    {
+                        ignoreBuiltinTabstripEvents = true;
+                        ModDebug.Log("Setting builtin tabstrip mode: " + originalBuiltinTabsripSelectedIndex);
+                        builtinTabstrip.selectedIndex = originalBuiltinTabsripSelectedIndex;
+                        ignoreBuiltinTabstripEvents = false;
                     }
                 }
             }
@@ -203,14 +213,6 @@ namespace ChangeRoadHeight
             }
 
             return atlas;
-        }
-
-        private void IgnoreBuiltinTabStripEvents(int selectedIndex)
-        {
-            ignoreBuiltinTabstripEvents = true;
-            ModDebug.Log("Setting builtin tabstrip mode: " + (selectedIndex));
-            builtinTabstrip.selectedIndex = selectedIndex;
-            ignoreBuiltinTabstripEvents = false;
         }
     }
 }

@@ -161,18 +161,18 @@ namespace ChangeRoadHeight.Threading
 
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)
         {
-            try
-            {
-                _OnUpdate();
-            }
-            catch (Exception e)
-            {
-                ModDebug.Error(e);
-            }
-        }
-
-        void _OnUpdate()
-        {
+    //       try
+    //       {
+    //           _OnUpdate();
+    //       }
+    //       catch (Exception e)
+    //       {
+    //           ModDebug.Error(e);
+    //       }
+    //   }
+    //
+    //   void _OnUpdate()
+    //   {
             if (loadingLevel) return;
 
             /*if (Input.GetKeyDown(KeyCode.Delete)) {
@@ -272,6 +272,7 @@ namespace ChangeRoadHeight.Threading
 
         void _OnBeforeSimulationTick()
         {
+            // ModDebug.Log("Is this working or not.");
             if (toolMode == ToolMode.None) return;
 
             if (!mouseDown)
