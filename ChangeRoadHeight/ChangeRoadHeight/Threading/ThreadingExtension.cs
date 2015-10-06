@@ -125,15 +125,15 @@ namespace ChangeRoadHeight.Threading
                 CreateBuildTool();
                 ToolsModifierControl.toolController.CurrentTool = buildTool;
 
-                if (mode == ToolMode.Oneway)
+                if (mode == ToolMode.RoadHeightDown)
                 {
-                    ModDebug.Log("One-way mode activated");
-                    toolMode = ToolMode.Oneway;
+                    ModDebug.Log("move road height down mode activated");
+                    toolMode = ToolMode.RoadHeightDown;
                 }
-                else if (mode == ToolMode.Twoway)
+                else if (mode == ToolMode.RoadHeightUp)
                 {
-                    ModDebug.Log("Two-way mode activated");
-                    toolMode = ToolMode.Twoway;
+                    ModDebug.Log("Move road height up mode activated");
+                    toolMode = ToolMode.RoadHeightUp;
                 }
 
                 ui.toolMode = toolMode;
@@ -376,7 +376,7 @@ namespace ChangeRoadHeight.Threading
                 {
                     prevHitPos = raycastOutput.m_hitPos;
                     dragging = true;
-                    if (toolMode == ToolMode.Oneway) return;
+                    if (toolMode == ToolMode.RoadHeightDown) return;
                 }
 
                 prevHitPos = raycastOutput.m_hitPos;
@@ -400,7 +400,7 @@ namespace ChangeRoadHeight.Threading
                 }
 
                 string newPrefabName = null;
-                if (toolMode == ToolMode.Oneway)
+                if (toolMode == ToolMode.RoadHeightDown)
                 {
                     if (!isOneway) newPrefabName = FindMatchingName(prefabName, twowayNames, onewayNames);
                     else newPrefabName = prefabName;
@@ -436,7 +436,7 @@ namespace ChangeRoadHeight.Threading
 
                     newRoadPrefab = newPrefab;
 
-                    int newIndex = RebuildSegment(segmentIndex, newPrefab, toolMode == ToolMode.Oneway, raycastOutput.m_hitPos, hitPosDelta, ref error);
+                    int newIndex = RebuildSegment(segmentIndex, newPrefab, toolMode == ToolMode.RoadHeightDown, raycastOutput.m_hitPos, hitPosDelta, ref error);
 
                     if (newIndex != 0)
                     {

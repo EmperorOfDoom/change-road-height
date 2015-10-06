@@ -3,7 +3,7 @@
     public enum ToolMode
     {
         None = 0,
-        Twoway = 1,
-        Oneway = 2
+        RoadHeightUp = 1,
+        RoadHeightDown = 2
     }
 }

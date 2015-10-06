@@ -98,11 +98,11 @@ namespace ChangeRoadHeight
                 else if (toolError == ToolError.SameDirection) text += "Road already goes this direction";
                 else if (toolError == ToolError.CannotUpgradeThisType)
                 {
-                    if (toolMode == ToolMode.Oneway) text += "Cannot upgrade this type to one-way road";
-                    else if (toolMode == ToolMode.Twoway) text += "Cannot upgrade this type to two-way road";
+                    if (toolMode == ToolMode.RoadHeightDown) text += "Cannot upgrade this type to one-way road";
+                    else if (toolMode == ToolMode.RoadHeightUp) text += "Cannot upgrade this type to two-way road";
                 }
-                else if (toolMode == ToolMode.Oneway) text += "Drag to set one-way road direction";
-                else if (toolMode == ToolMode.Twoway) text += "Upgrade to two-way road";
+                else if (toolMode == ToolMode.RoadHeightDown) text += "Drag to set one-way road direction";
+                else if (toolMode == ToolMode.RoadHeightUp) text += "Upgrade to two-way road";
 
                 if (toolError != ToolError.None) text += "</color>";
 
