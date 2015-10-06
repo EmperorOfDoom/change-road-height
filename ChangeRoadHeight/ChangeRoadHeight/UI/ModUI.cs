@@ -39,15 +39,6 @@ namespace ChangeRoadHeight
             }
         }
 
-        private void IgnoreBuiltinTabstrip (int selectedIndex)
-        {
-            ignoreBuiltinTabstripEvents = true;
-            ModDebug.Log("Setting builtin tabstrip mode: " + (selectedIndex));
-            builtinTabstrip.selectedIndex = selectedIndex;
-            ignoreBuiltinTabstripEvents = false;
-        }
-
-
         public event System.Action<ToolMode> selectedToolModeChanged;
 
         bool initialized {
@@ -59,6 +50,8 @@ namespace ChangeRoadHeight
         UIComponent roadsOptionPanel = null;
         UITabstrip builtinTabstrip = null;
         UITabstrip tabstrip = null;
+        private static readonly int spriteWidth = 31;
+        private static readonly int spriteHeight = 31;
 
         public void Show() {
             if (!initialized) {
@@ -111,39 +104,7 @@ namespace ChangeRoadHeight
             GameObject rootObject = new GameObject("ExtendedRoadUpgradePanel");
             tabstrip = rootObject.AddComponent<UITabstrip>();
 
-            UIButton tabTemplate = (UIButton)builtinTabstrip.tabs[0];
-
-            int spriteWidth = 31;
-            int spriteHeight = 31;
-
-            UITextureAtlas atlas = CreateTextureAtlas("sprites.png", "ExtendedRoadUpgradeUI", tabTemplate.atlas.material, spriteWidth, spriteHeight);
-
-            List<UIButton> tabs = new List<UIButton>();
-            tabs.Add(tabstrip.AddTab("", null, false));
-            tabs.Add(tabstrip.AddTab("", null, false));
-
-            foreach (UIButton tab in tabs) {
-                tab.name = "ChangeRoadHeightButton";
-                tab.atlas = atlas;
-                tab.size = new Vector2(spriteWidth, spriteHeight);
-                tab.normalBgSprite = SpriteName.ButtonBackground.ToString();
-                tab.disabledBgSprite = SpriteName.ButtonBackground.ToString();
-                tab.hoveredBgSprite = SpriteName.ButtonBackgroundHovered.ToString();
-                tab.pressedBgSprite = SpriteName.ButtonBackgroundPressed.ToString();
-                tab.focusedBgSprite = SpriteName.ButtonBackgroundPressed.ToString();
-                tab.playAudioEvents = true;
-            }
-
-            tabs[0].name = "ChangeRoadHeightButtonUp";
-            tabs[0].tooltip = "Move road up";
-            tabs[0].normalFgSprite = tabs[0].disabledFgSprite = tabs[0].hoveredFgSprite = SpriteName.IconRoadUp.ToString();
-            tabs[0].pressedFgSprite = tabs[0].focusedFgSprite = SpriteName.IconRoadUpPressed.ToString();
-
-            tabs[1].name = "ChangeRoadHeightButtonDown";
-            tabs[1].tooltip = "Move road down";
-            tabs[1].normalFgSprite = tabs[1].disabledFgSprite = tabs[1].hoveredFgSprite = SpriteName.IconRoadDown.ToString();
-            tabs[1].pressedFgSprite = tabs[1].focusedFgSprite = SpriteName.IconRoadDownPressed.ToString();
-
+            CreateButtons();
 
             roadsOptionPanel.AttachUIComponent(tabstrip.gameObject);
             tabstrip.relativePosition = new Vector3(169, 38);
@@ -163,6 +124,43 @@ namespace ChangeRoadHeight
 
             // Setting selectedIndex needs to be delayed for some reason
             tabstrip.StartCoroutine(FinishCreatingView());
+        }
+
+        private void CreateButtons()
+        {
+            UIButton tabTemplate = (UIButton)builtinTabstrip.tabs[0];
+            UITextureAtlas atlas = CreateTextureAtlas("sprites.png", "ExtendedRoadUpgradeUI", tabTemplate.atlas.material, spriteWidth, spriteHeight);
+            List<UIButton> buttons = new List<UIButton>();
+
+            buttons.Add(tabstrip.AddTab("", null, false));
+            buttons.Add(tabstrip.AddTab("", null, false));
+            foreach (UIButton button in buttons)
+            {
+                SetDefaultSettingsForButton(button, atlas);
+            }
+            SetButtonSpecificProperties(buttons[0], "ChangeRoadHeightButtonUp", "Move road up", SpriteName.IconRoadUp, SpriteName.IconRoadUpPressed);
+            SetButtonSpecificProperties(buttons[1], "ChangeRoadHeightButtonDown", "Move road down", SpriteName.IconRoadDown, SpriteName.IconRoadDownPressed);
+        }
+
+        private void SetDefaultSettingsForButton(UIButton button, UITextureAtlas atlas)
+        {
+            button.name = "ChangeRoadHeightButton";
+            button.atlas = atlas;
+            button.size = new Vector2(spriteWidth, spriteHeight);
+            button.normalBgSprite = SpriteName.ButtonBackground.ToString();
+            button.disabledBgSprite = SpriteName.ButtonBackground.ToString();
+            button.hoveredBgSprite = SpriteName.ButtonBackgroundHovered.ToString();
+            button.pressedBgSprite = SpriteName.ButtonBackgroundPressed.ToString();
+            button.focusedBgSprite = SpriteName.ButtonBackgroundPressed.ToString();
+            button.playAudioEvents = true;
+        }
+
+        private void SetButtonSpecificProperties(UIButton button, String name, String tooltip, SpriteName normalSprite, SpriteName hoveredSprite)
+        {
+            button.name = name;
+            button.tooltip = tooltip;
+            button.normalFgSprite = button.disabledFgSprite = button.hoveredFgSprite = normalSprite.ToString();
+            button.pressedFgSprite = button.focusedFgSprite = hoveredSprite.ToString();
         }
 
         System.Collections.IEnumerator FinishCreatingView() {
@@ -216,6 +214,14 @@ namespace ChangeRoadHeight
             }
 
             return atlas;
+        }
+
+        private void IgnoreBuiltinTabstrip(int selectedIndex)
+        {
+            ignoreBuiltinTabstripEvents = true;
+            ModDebug.Log("Setting builtin tabstrip mode: " + (selectedIndex));
+            builtinTabstrip.selectedIndex = selectedIndex;
+            ignoreBuiltinTabstripEvents = false;
         }
     }
 }
