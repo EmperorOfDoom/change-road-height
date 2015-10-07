@@ -23,9 +23,6 @@ namespace ChangeRoadHeight.Threading
         ToolMode toolMode = ToolMode.None;
         ToolError toolError = ToolError.None;
 
-
-        string[] twowayNames = { "Basic Road", "Large Road" };
-        string[] onewayNames = { "Oneway Road", "Large Oneway" };
         Vector3 hitPosDelta = Vector3.zero;
         Vector3 prevHitPos;
         float prevRebuildTime = 0.0f;
@@ -73,6 +70,7 @@ namespace ChangeRoadHeight.Threading
 
         void CreateBuildTool()
         {
+            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             if (buildTool == null)
             {
                 buildTool = ToolsModifierControl.toolController.gameObject.GetComponent<BuildTool>();
@@ -90,6 +88,7 @@ namespace ChangeRoadHeight.Threading
 
         void DestroyBuildTool()
         {
+            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             if (buildTool != null)
             {
                 ModDebug.Log("Tool destroyed");
@@ -100,6 +99,7 @@ namespace ChangeRoadHeight.Threading
 
         void FindRoadPrefabs()
         {
+            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             foreach (NetCollection collection in NetCollection.FindObjectsOfType<NetCollection>())
             {
                 if (collection.name == "Road")
@@ -117,6 +117,7 @@ namespace ChangeRoadHeight.Threading
 
         void SetToolMode(ToolMode mode, bool resetNetToolModeToStraight = false)
         {
+            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             if (mode == toolMode) return;
 
             if (mode != ToolMode.None)
@@ -162,25 +163,9 @@ namespace ChangeRoadHeight.Threading
 
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)
         {
-    //       try
-    //       {
-    //           _OnUpdate();
-    //       }
-    //       catch (Exception e)
-    //       {
-    //           ModDebug.Error(e);
-    //       }
-    //   }
-    //
-    //   void _OnUpdate()
-    //   {
-            if (loadingLevel) return;
+            // ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
 
-            /*if (Input.GetKeyDown(KeyCode.Delete)) {
-                if (UIInput.hoveredComponent != null) {
-                    ModDebug.Log(UIUtils.Instance.GetTransformPath(UIInput.hoveredComponent.transform) + " (" + UIInput.hoveredComponent.GetType() + ")");
-                }
-            }*/
+            if (loadingLevel) return;
 
             if (Input.GetKeyDown(KeyCode.Return))
             {
@@ -227,13 +212,6 @@ namespace ChangeRoadHeight.Threading
                 ui.Show();
             }
 
-            /*if (Input.GetKeyDown(KeyCode.Comma)) {
-                SetToolMode(ToolMode.Twoway);
-            }
-            else if (Input.GetKeyDown(KeyCode.Period)) {
-                SetToolMode(ToolMode.Oneway);
-            }*/
-
             if (toolMode != ToolMode.None)
             {
                 mouseDown = Input.GetMouseButton(0);
@@ -261,19 +239,8 @@ namespace ChangeRoadHeight.Threading
 
         public override void OnBeforeSimulationTick()
         {
-            try
-            {
-                _OnBeforeSimulationTick();
-            }
-            catch (Exception e)
-            {
-                ModDebug.Error(e);
-            }
-        }
+            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
 
-        void _OnBeforeSimulationTick()
-        {
-            // ModDebug.Log("Is this working or not.");
             if (toolMode == ToolMode.None) return;
 
             if (!mouseDown)
@@ -298,6 +265,7 @@ namespace ChangeRoadHeight.Threading
             raycastInput.m_ignoreSegmentFlags = NetSegment.Flags.Untouchable;
 
             ToolBase.RaycastOutput raycastOutput;
+
             if (BuildTool.RayCast(raycastInput, out raycastOutput))
             {
 
@@ -307,6 +275,7 @@ namespace ChangeRoadHeight.Threading
 
                     NetManager net = Singleton<NetManager>.instance;
                     NetInfo newRoadPrefab = null;
+                    NetInfo prefab = net.m_segments.m_buffer[segmentIndex].Info;
 
                     NetTool.ControlPoint startPoint;
                     NetTool.ControlPoint middlePoint;
@@ -327,23 +296,37 @@ namespace ChangeRoadHeight.Threading
                     {
                         toolError = ToolError.OutOfArea;
                     }
-                    else
-                    {
-                        if (mouseDown)
-                        {
-                            HandleMouseDrag(ref raycastOutput, ref toolError, false, ref newRoadPrefab, ref segmentIndex);
 
-                            if (segmentIndex == prevBuiltSegmentIndex)
-                            {
-                                toolError = ToolError.AlreadyBuilt;
-                            }
-                        }
-                        else
-                        {
-                            HandleMouseDrag(ref raycastOutput, ref toolError, true, ref newRoadPrefab, ref segmentIndex);
-                        }
+                    string prefabName = null;
+                    if (!roadPrefabNames.TryGetValue(prefab.GetInstanceID(), out prefabName) || prefabName == null)
+                    {
+                        ModDebug.Error("Prefab name not found");
+                        toolError = ToolError.Unknown;
+                        return;
                     }
 
+                    NetInfo newPrefab;
+                    if (!roadPrefabs.TryGetValue(prefabName, out newPrefab) || newPrefab == null)
+                    {
+                        ModDebug.Error("Prefab not found: " + prefabName);
+                        toolError = ToolError.Unknown;
+                        return;
+                    }
+
+                    newRoadPrefab = newPrefab;
+                    if (mouseDown && currentTime - prevRebuildTime > 0.4f)
+                    {
+                        int newIndex = RebuildSegment(segmentIndex, newPrefab, raycastOutput.m_hitPos, hitPosDelta, ref toolError);
+                    
+                        if (newIndex != 0)
+                        {
+                            if (toolError != ToolError.None) return;
+
+                            prevBuiltSegmentIndex = segmentIndex;
+                            prevRebuildTime = currentTime;
+                            segmentIndex = newIndex;
+                        }
+                    }
                     if (buildTool != null)
                     {
                         buildTool.segment = net.m_segments.m_buffer[segmentIndex];
@@ -361,114 +344,9 @@ namespace ChangeRoadHeight.Threading
             }
         }
 
-        void HandleMouseDrag(ref ToolBase.RaycastOutput raycastOutput, ref ToolError error, bool test, ref NetInfo newRoadPrefab, ref int newSegmentIndex)
-        {
-            if (!test)
-            {
-                if (currentTime - prevRebuildTime < 0.1f) return;
-
-                if (dragging)
-                {
-                    hitPosDelta = raycastOutput.m_hitPos - prevHitPos;
-                    if (hitPosDelta.magnitude < 12.0f) return;
-                }
-                else
-                {
-                    prevHitPos = raycastOutput.m_hitPos;
-                    dragging = true;
-                    if (toolMode == ToolMode.RoadHeightDown) return;
-                }
-
-                prevHitPos = raycastOutput.m_hitPos;
-            }
-
-            int segmentIndex = raycastOutput.m_netSegment;
-            if (segmentIndex != 0)
-            {
-                NetManager net = Singleton<NetManager>.instance;
-                NetInfo prefab = net.m_segments.m_buffer[segmentIndex].Info;
-
-                bool isOneway = !prefab.m_hasForwardVehicleLanes || !prefab.m_hasBackwardVehicleLanes;
-
-
-                string prefabName = null;
-                if (!roadPrefabNames.TryGetValue(prefab.GetInstanceID(), out prefabName) || prefabName == null)
-                {
-                    ModDebug.Error("Prefab name not found");
-                    error = ToolError.Unknown;
-                    return;
-                }
-
-                string newPrefabName = null;
-                if (toolMode == ToolMode.RoadHeightDown)
-                {
-                    if (!isOneway) newPrefabName = FindMatchingName(prefabName, twowayNames, onewayNames);
-                    else newPrefabName = prefabName;
-                }
-                else
-                {
-                    if (isOneway)
-                    {
-                        newPrefabName = FindMatchingName(prefabName, onewayNames, twowayNames);
-                    }
-                    else
-                    {
-                        toolError = ToolError.AlreadyTwoway;
-                        return;
-                    }
-                }
-
-                if (newPrefabName != null)
-                {
-                    if (test)
-                    {
-                        toolError = ToolError.None;
-                        return;
-                    }
-
-                    NetInfo newPrefab;
-                    if (!roadPrefabs.TryGetValue(newPrefabName, out newPrefab) || newPrefab == null)
-                    {
-                        ModDebug.Error("Prefab not found: " + newPrefabName);
-                        error = ToolError.Unknown;
-                        return;
-                    }
-
-                    newRoadPrefab = newPrefab;
-
-                    int newIndex = RebuildSegment(segmentIndex, newPrefab, toolMode == ToolMode.RoadHeightDown, raycastOutput.m_hitPos, hitPosDelta, ref error);
-
-                    if (newIndex != 0)
-                    {
-                        if (error != ToolError.None) return;
-
-                        prevBuiltSegmentIndex = newSegmentIndex;
-                        prevRebuildTime = currentTime;
-                        newSegmentIndex = newIndex;
-                    }
-                }
-                else
-                {
-                    toolError = ToolError.CannotUpgradeThisType;
-                    return;
-                }
-            }
-        }
-
-        string FindMatchingName(string originalName, string[] fromNames, string[] toNames)
-        {
-            for (int i = 0; i < fromNames.Length; ++i)
-            {
-                if (originalName.Contains(fromNames[i]))
-                {
-                    return originalName.Replace(fromNames[i], toNames[i]);
-                }
-            }
-            return null;
-        }
-
         void GetSegmentControlPoints(int segmentIndex, out NetTool.ControlPoint startPoint, out NetTool.ControlPoint middlePoint, out NetTool.ControlPoint endPoint)
         {
+            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             NetManager net = Singleton<NetManager>.instance;
             NetInfo prefab = net.m_segments.m_buffer[segmentIndex].Info;
 
@@ -494,10 +372,11 @@ namespace ChangeRoadHeight.Threading
             middlePoint.m_outside = false;
         }
 
-        int RebuildSegment(int segmentIndex, NetInfo newPrefab, bool roadDirectionMatters, Vector3 directionPoint, Vector3 direction, ref ToolError error)
+        int RebuildSegment(int segmentIndex, NetInfo newPrefab, Vector3 directionPoint, Vector3 direction, ref ToolError error)
         {
-            NetManager net = Singleton<NetManager>.instance;
+            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
 
+            NetManager net = Singleton<NetManager>.instance;
             NetInfo prefab = net.m_segments.m_buffer[segmentIndex].Info;
 
             NetTool.ControlPoint startPoint;
@@ -511,37 +390,6 @@ namespace ChangeRoadHeight.Threading
                 float threshold = Mathf.Cos(Mathf.PI / 4);
 
                 if (dot > -threshold && dot < threshold) return 0;
-
-                if (roadDirectionMatters)
-                {
-                    bool inverted = (net.m_segments.m_buffer[segmentIndex].m_flags & NetSegment.Flags.Invert) != 0;
-
-                    if (Singleton<SimulationManager>.instance.m_metaData.m_invertTraffic == SimulationMetaData.MetaBool.True)
-                    {
-                        inverted = !inverted; // roads need to be placed in the opposite direction with left-hand traffic
-                    }
-
-                    bool reverseDirection = inverted ? (dot > 0.0f) : (dot < -0.0f);
-
-                    if (reverseDirection)
-                    {
-                        var tmp = startPoint;
-                        startPoint = endPoint;
-                        endPoint = tmp;
-
-                        startPoint.m_direction = -startPoint.m_direction;
-                        endPoint.m_direction = -endPoint.m_direction;
-                        middlePoint.m_direction = startPoint.m_direction;
-                    }
-                    else
-                    {
-                        if (prefab == newPrefab)
-                        {
-                            error = ToolError.SameDirection;
-                            return 0;
-                        }
-                    }
-                }
             }
 
             bool test = false;

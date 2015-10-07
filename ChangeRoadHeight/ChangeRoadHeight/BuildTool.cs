@@ -42,6 +42,7 @@ namespace ChangeRoadHeight
 
         public override void SimulationStep()
         {
+            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             base.SimulationStep();
 
             if (isHoveringSegment)
@@ -59,6 +60,7 @@ namespace ChangeRoadHeight
 
         public override void RenderGeometry(RenderManager.CameraInfo cameraInfo)
         {
+           // ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             base.RenderGeometry(cameraInfo);
 
             if (isHoveringSegment)
@@ -69,6 +71,7 @@ namespace ChangeRoadHeight
 
         public override void RenderOverlay(RenderManager.CameraInfo cameraInfo)
         {
+           // ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             base.RenderOverlay(cameraInfo);
 
             if (isHoveringSegment)
@@ -83,33 +86,19 @@ namespace ChangeRoadHeight
             }
         }
 
-        protected override void OnToolUpdate()
-        {
-            if (isHoveringSegment)
-            {
+        protected override void OnToolUpdate() {
+           // ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+            if (isHoveringSegment) {
                 Vector3 worldPos = segment.m_bounds.center;
 
                 string text = "";
-                if (toolError != ToolError.None) text += "<color #ff7e00>";
-
-                if (toolError == ToolError.Unknown) text += "Unknown error";
-                else if (toolError == ToolError.OutOfArea) text += "Out of city limits!";
-                else if (toolError == ToolError.AlreadyTwoway) text += "Road is already two-way";
-                else if (toolError == ToolError.SameDirection) text += "Road already goes this direction";
-                else if (toolError == ToolError.CannotUpgradeThisType)
-                {
-                    if (toolMode == ToolMode.RoadHeightDown) text += "Cannot upgrade this type to one-way road";
-                    else if (toolMode == ToolMode.RoadHeightUp) text += "Cannot upgrade this type to two-way road";
+                if (toolMode == ToolMode.RoadHeightUp) {
+                    text = "Click to increase road height.";
+                } else if (toolMode == ToolMode.RoadHeightDown) {
+                    text = "Click to lower road height.";
                 }
-                else if (toolMode == ToolMode.RoadHeightDown) text += "Drag to set one-way road direction";
-                else if (toolMode == ToolMode.RoadHeightUp) text += "Upgrade to two-way road";
-
-                if (toolError != ToolError.None) text += "</color>";
-
                 ShowToolInfo(true, text, worldPos);
-            }
-            else
-            {
+            } else {
                 ShowToolInfo(false, null, Vector3.zero);
             }
         }
