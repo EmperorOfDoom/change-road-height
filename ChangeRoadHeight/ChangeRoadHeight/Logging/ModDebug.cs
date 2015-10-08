@@ -4,7 +4,7 @@ namespace ChangeRoadHeight
 {
     public static class ModDebug {
         const string prefix = "ChangeRoadHeight: ";
-        static bool debuggingEnabled = false;
+        static bool debuggingEnabled = true;
         static bool logClassAndMethodName = true;
 
         public static void LogClassAndMethodName(string className, string methodName) {

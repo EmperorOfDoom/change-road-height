@@ -7,6 +7,7 @@ using ICities;
 using UnityEngine;
 using ChangeRoadHeight.Enums;
 using ChangeRoadHeight.UI;
+using System.Reflection;
 
 namespace ChangeRoadHeight.Threading
 {
@@ -24,14 +25,12 @@ namespace ChangeRoadHeight.Threading
         ToolError toolError = ToolError.None;
 
         Vector3 hitPosDelta = Vector3.zero;
-        Vector3 prevHitPos;
         float prevRebuildTime = 0.0f;
         int prevBuiltSegmentIndex = 0;
         bool mouseRayValid = false;
         Ray mouseRay;
         float mouseRayLength;
         bool mouseDown = false;
-        bool dragging = false;
         float currentTime = 0.0f;
 
         UIPanel roadsPanel = null;
@@ -39,7 +38,7 @@ namespace ChangeRoadHeight.Threading
         ModUI ui = new ModUI();
         bool loadingLevel = false;
 
-        BuildTool buildTool = null;
+        BuildTool15 buildTool = null;
 
         public void OnLevelUnloading()
         {
@@ -73,10 +72,10 @@ namespace ChangeRoadHeight.Threading
             ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             if (buildTool == null)
             {
-                buildTool = ToolsModifierControl.toolController.gameObject.GetComponent<BuildTool>();
+                buildTool = ToolsModifierControl.toolController.gameObject.GetComponent<BuildTool15>();
                 if (buildTool == null)
                 {
-                    buildTool = ToolsModifierControl.toolController.gameObject.AddComponent<BuildTool>();
+                    buildTool = ToolsModifierControl.toolController.gameObject.AddComponent<BuildTool15>();
                     ModDebug.Log("Tool created: " + buildTool);
                 }
                 else
@@ -92,7 +91,7 @@ namespace ChangeRoadHeight.Threading
             if (buildTool != null)
             {
                 ModDebug.Log("Tool destroyed");
-                BuildTool.Destroy(buildTool);
+                BuildTool15.Destroy(buildTool);
                 buildTool = null;
             }
         }
@@ -163,8 +162,7 @@ namespace ChangeRoadHeight.Threading
 
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)
         {
-            // ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
-
+           //  ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             if (loadingLevel) return;
 
             if (Input.GetKeyDown(KeyCode.Return))
@@ -235,17 +233,13 @@ namespace ChangeRoadHeight.Threading
                     ToolsModifierControl.toolController.CurrentTool = netTool;
                 }
             }
-        }
-
-        public override void OnBeforeSimulationTick()
-        {
-            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+       
+            //ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
 
             if (toolMode == ToolMode.None) return;
 
             if (!mouseDown)
             {
-                dragging = false;
                 prevBuiltSegmentIndex = 0;
             }
 
@@ -266,7 +260,7 @@ namespace ChangeRoadHeight.Threading
 
             ToolBase.RaycastOutput raycastOutput;
 
-            if (BuildTool.RayCast(raycastInput, out raycastOutput))
+            if (BuildTool15.RayCast(raycastInput, out raycastOutput))
             {
 
                 int segmentIndex = raycastOutput.m_netSegment;
@@ -314,12 +308,14 @@ namespace ChangeRoadHeight.Threading
                     }
 
                     newRoadPrefab = newPrefab;
-                    if (mouseDown && currentTime - prevRebuildTime > 0.4f)
+                    if (mouseDown && ((currentTime - prevRebuildTime) > 0.4f))
                     {
+                        ModDebug.Log("Going to rebuild segment");
                         int newIndex = RebuildSegment(segmentIndex, newPrefab, raycastOutput.m_hitPos, hitPosDelta, ref toolError);
                     
                         if (newIndex != 0)
                         {
+                            ModDebug.Log("newIndex: " + newIndex);
                             if (toolError != ToolError.None) return;
 
                             prevBuiltSegmentIndex = segmentIndex;
@@ -329,11 +325,12 @@ namespace ChangeRoadHeight.Threading
                     }
                     if (buildTool != null)
                     {
-                        buildTool.segment = net.m_segments.m_buffer[segmentIndex];
-                        buildTool.segmentIndex = segmentIndex;
-                        buildTool.isHoveringSegment = toolError != ToolError.Unknown;
-                        if (newRoadPrefab != null) buildTool.newPrefab = newRoadPrefab;
-                        GetSegmentControlPoints(segmentIndex, out buildTool.startPoint, out buildTool.middlePoint, out buildTool.endPoint);
+                         ModDebug.Log("Using segment from buffer");
+                         buildTool.segment = net.m_segments.m_buffer[segmentIndex];
+                         buildTool.segmentIndex = segmentIndex;
+                         buildTool.isHoveringSegment = toolError != ToolError.Unknown;
+                         if (newRoadPrefab != null) buildTool.newPrefab = newRoadPrefab;
+                         GetSegmentControlPoints(segmentIndex, out buildTool.startPoint, out buildTool.middlePoint, out buildTool.endPoint);
                     }
                 }
             }
@@ -346,7 +343,7 @@ namespace ChangeRoadHeight.Threading
 
         void GetSegmentControlPoints(int segmentIndex, out NetTool.ControlPoint startPoint, out NetTool.ControlPoint middlePoint, out NetTool.ControlPoint endPoint)
         {
-            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+           // ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             NetManager net = Singleton<NetManager>.instance;
             NetInfo prefab = net.m_segments.m_buffer[segmentIndex].Info;
 
@@ -382,6 +379,17 @@ namespace ChangeRoadHeight.Threading
             NetTool.ControlPoint startPoint;
             NetTool.ControlPoint middlePoint;
             NetTool.ControlPoint endPoint;
+
+            MethodInfo dynMethod = netTool.GetType().GetMethod("ChangeElevation", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (toolMode == ToolMode.RoadHeightUp)
+            {
+                Singleton<SimulationManager>.instance.AddAction<bool>((IEnumerator<bool>)dynMethod.Invoke(new NetTool(), new object[] { 1 }));
+            }
+            else if (toolMode == ToolMode.RoadHeightDown)
+            {
+                Singleton<SimulationManager>.instance.AddAction<bool>((IEnumerator<bool>)dynMethod.Invoke(new NetTool(), new object[] { -1 }));
+            }
+
             GetSegmentControlPoints(segmentIndex, out startPoint, out middlePoint, out endPoint);
 
             if (direction.magnitude > 0.0f)
@@ -392,29 +400,24 @@ namespace ChangeRoadHeight.Threading
                 if (dot > -threshold && dot < threshold) return 0;
             }
 
-            bool test = false;
-            bool visualize = false;
-            bool autoFix = true;
-            bool needMoney = false;
-            bool invert = false;
-
             ushort node = 0;
             ushort segment = 0;
             int cost = 0;
             int productionRate = 0;
 
-            NetTool.CreateNode(newPrefab, startPoint, middlePoint, endPoint, NetTool.m_nodePositionsSimulation, 1000, test, visualize, autoFix, needMoney, invert, false, (ushort)0, out node, out segment, out cost, out productionRate);
+            // public static ToolBase.ToolErrors CreateNode(NetInfo info, NetTool.ControlPoint startPoint, NetTool.ControlPoint middlePoint, NetTool.ControlPoint endPoint, FastList<NetTool.NodePosition> nodeBuffer, int maxSegments, bool test, bool visualize, bool autoFix, bool needMoney, bool invert, bool switchDir, ushort relocateBuildingID, out ushort firstNode, out ushort lastNode, out ushort segment, out int cost, out int productionRate)
+            NetTool.CreateNode(newPrefab, startPoint, middlePoint, endPoint, NetTool.m_nodePositionsSimulation, 1000, false, false, true, false, false, false, (ushort)0, out node, out segment, out cost, out productionRate);
 
-            if (segment != 0)
-            {
-                if (newPrefab.m_class.m_service == ItemClass.Service.Road)
-                {
-                    Singleton<CoverageManager>.instance.CoverageUpdated(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Level.None);
-                }
-
-                error = ToolError.None;
-                return segment;
-            }
+           if (segment != 0)
+           {
+               if (newPrefab.m_class.m_service == ItemClass.Service.Road)
+               {
+                   Singleton<CoverageManager>.instance.CoverageUpdated(ItemClass.Service.None, ItemClass.SubService.None, ItemClass.Level.None);
+               }
+           
+               error = ToolError.None;
+               return segment;
+           }
 
             return 0;
         }

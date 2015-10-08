@@ -4,7 +4,8 @@ using ChangeRoadHeight.Enums;
 
 namespace ChangeRoadHeight
 {
-    class BuildTool : ToolBase
+    // rename to test while game is running.
+    class BuildTool15: ToolBase
     {
 
         public ToolMode toolMode = ToolMode.None;
