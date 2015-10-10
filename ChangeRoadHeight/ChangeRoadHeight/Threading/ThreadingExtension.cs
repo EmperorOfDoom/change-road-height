@@ -38,7 +38,7 @@ namespace ChangeRoadHeight.Threading
         ModUI ui = new ModUI();
         bool loadingLevel = false;
 
-        BuildTool15 buildTool = null;
+        BuildTool21 buildTool = null;
 
         public void OnLevelUnloading()
         {
@@ -72,10 +72,10 @@ namespace ChangeRoadHeight.Threading
             ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             if (buildTool == null)
             {
-                buildTool = ToolsModifierControl.toolController.gameObject.GetComponent<BuildTool15>();
+                buildTool = ToolsModifierControl.toolController.gameObject.GetComponent<BuildTool21>();
                 if (buildTool == null)
                 {
-                    buildTool = ToolsModifierControl.toolController.gameObject.AddComponent<BuildTool15>();
+                    buildTool = ToolsModifierControl.toolController.gameObject.AddComponent<BuildTool21>();
                     ModDebug.Log("Tool created: " + buildTool);
                 }
                 else
@@ -91,7 +91,7 @@ namespace ChangeRoadHeight.Threading
             if (buildTool != null)
             {
                 ModDebug.Log("Tool destroyed");
-                BuildTool15.Destroy(buildTool);
+                BuildTool21.Destroy(buildTool);
                 buildTool = null;
             }
         }
@@ -162,7 +162,7 @@ namespace ChangeRoadHeight.Threading
 
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)
         {
-           //  ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+             ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             if (loadingLevel) return;
 
             if (Input.GetKeyDown(KeyCode.Return))
@@ -260,7 +260,7 @@ namespace ChangeRoadHeight.Threading
 
             ToolBase.RaycastOutput raycastOutput;
 
-            if (BuildTool15.RayCast(raycastInput, out raycastOutput))
+            if (BuildTool21.RayCast(raycastInput, out raycastOutput))
             {
 
                 int segmentIndex = raycastOutput.m_netSegment;
@@ -308,24 +308,23 @@ namespace ChangeRoadHeight.Threading
                     }
 
                     newRoadPrefab = newPrefab;
-                    if (mouseDown && ((currentTime - prevRebuildTime) > 0.4f))
-                    {
-                        ModDebug.Log("Going to rebuild segment");
+
+                      //  ModDebug.Log("Going to rebuild segment");
                         int newIndex = RebuildSegment(segmentIndex, newPrefab, raycastOutput.m_hitPos, hitPosDelta, ref toolError);
                     
                         if (newIndex != 0)
                         {
-                            ModDebug.Log("newIndex: " + newIndex);
+                        //    ModDebug.Log("newIndex: " + newIndex);
                             if (toolError != ToolError.None) return;
 
                             prevBuiltSegmentIndex = segmentIndex;
                             prevRebuildTime = currentTime;
                             segmentIndex = newIndex;
                         }
-                    }
+                   
                     if (buildTool != null)
                     {
-                         ModDebug.Log("Using segment from buffer");
+                        // ModDebug.Log("Using segment from buffer");
                          buildTool.segment = net.m_segments.m_buffer[segmentIndex];
                          buildTool.segmentIndex = segmentIndex;
                          buildTool.isHoveringSegment = toolError != ToolError.Unknown;
@@ -371,7 +370,7 @@ namespace ChangeRoadHeight.Threading
 
         int RebuildSegment(int segmentIndex, NetInfo newPrefab, Vector3 directionPoint, Vector3 direction, ref ToolError error)
         {
-            ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+          //  ModDebug.LogClassAndMethodName(this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
 
             NetManager net = Singleton<NetManager>.instance;
             NetInfo prefab = net.m_segments.m_buffer[segmentIndex].Info;
@@ -405,9 +404,12 @@ namespace ChangeRoadHeight.Threading
             int cost = 0;
             int productionRate = 0;
 
-            // public static ToolBase.ToolErrors CreateNode(NetInfo info, NetTool.ControlPoint startPoint, NetTool.ControlPoint middlePoint, NetTool.ControlPoint endPoint, FastList<NetTool.NodePosition> nodeBuffer, int maxSegments, bool test, bool visualize, bool autoFix, bool needMoney, bool invert, bool switchDir, ushort relocateBuildingID, out ushort firstNode, out ushort lastNode, out ushort segment, out int cost, out int productionRate)
-            NetTool.CreateNode(newPrefab, startPoint, middlePoint, endPoint, NetTool.m_nodePositionsSimulation, 1000, false, false, true, false, false, false, (ushort)0, out node, out segment, out cost, out productionRate);
-
+            //  CreateNode(NetInfo info, NetTool.ControlPoint startPoint, NetTool.ControlPoint middlePoint, NetTool.ControlPoint endPoint, FastList<NetTool.NodePosition> nodeBuffer, int maxSegments, bool test, bool visualize, bool autoFix, bool needMoney, bool invert, bool switchDir, ushort relocateBuildingID, out ushort firstNode, out ushort lastNode, out ushort segment, out int cost, out int productionRate)
+            if (mouseDown && ((currentTime - prevRebuildTime) > 0.4f))
+            {
+                newPrefab.m_minHeight = 12.0f;
+                NetTool.CreateNode(newPrefab, startPoint, middlePoint, endPoint, NetTool.m_nodePositionsSimulation, 1000, false, false, true, false, false, false, (ushort)0, out node, out segment, out cost, out productionRate);
+            }
            if (segment != 0)
            {
                if (newPrefab.m_class.m_service == ItemClass.Service.Road)
